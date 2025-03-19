@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -23,10 +24,15 @@ public class BookingController {
      * (URL: http://localhost:8080/api/bookings/add) + POST
      */
     @PostMapping("/add")
-    public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {
-        return ResponseEntity.ok(bookingService.createBooking(booking));
+    public ResponseEntity<?> createBooking(@RequestBody Booking booking) {
+        try {
+            Booking createdBooking = bookingService.createBooking(booking);
+            return ResponseEntity.ok(createdBooking);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
-//*****************************************************************************************************
+//**************************************************************************************************************
     /**
      * Tüm rezervasyonları getiren endpoint.
      * @return ResponseEntity<List<Booking>> rezervasyon listesi
@@ -37,7 +43,7 @@ public class BookingController {
     public ResponseEntity<List<Booking>> getAllBookings() {
         return ResponseEntity.ok(bookingService.getAllBookings());
     }
-
+//**************************************************************************************************************
     /**
      * Belirtilen ID'ye sahip rezervasyonu getiren endpoint.
      * @param id Rezervasyon ID'si
@@ -46,10 +52,14 @@ public class BookingController {
      * (URL: http://localhost:8080/api/bookings/get/{id}) + GET
      */
     @GetMapping("/get/{id}")
-    public ResponseEntity<Booking> getBookingById(@PathVariable Long id) {
-        return ResponseEntity.ok(bookingService.getBookingById(id));
+    public ResponseEntity<?> getBookingById(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(bookingService.getBookingById(id));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
-
+//**************************************************************************************************************
     /**
      * Belirtilen ID'ye sahip rezervasyonu güncelleyen endpoint.
      * @param id Güncellenecek rezervasyonun ID'si
@@ -59,10 +69,15 @@ public class BookingController {
      * (URL: http://localhost:8080/api/bookings/update/{id}) + PUT
      */
     @PutMapping("/update/{id}")
-    public ResponseEntity<Booking> updateBooking(@PathVariable Long id, @RequestBody Booking updatedBooking) {
-        return ResponseEntity.ok(bookingService.updateBooking(id, updatedBooking));
+    public ResponseEntity<?> updateBooking(@PathVariable Long id, @RequestBody Booking updatedBooking) {
+        try {
+            Booking updated = bookingService.updateBooking(id, updatedBooking);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
-
+//**************************************************************************************************************
     /**
      * Belirtilen ID'ye sahip rezervasyonu silen endpoint.
      * @param id Silinecek rezervasyonun ID'si
@@ -71,11 +86,14 @@ public class BookingController {
      * (URL: http://localhost:8080/api/bookings/delete/{id}) + DELETE
      */
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteBooking(@PathVariable Long id) {
-        String message = bookingService.deleteBooking(id);
-        return ResponseEntity.ok(message);
+    public ResponseEntity<?> deleteBooking(@PathVariable Long id) {
+        try {
+            String message = bookingService.deleteBooking(id);
+            return ResponseEntity.ok(Map.of("message", message));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
-
-
+    //**************************************************************************************************************
 }

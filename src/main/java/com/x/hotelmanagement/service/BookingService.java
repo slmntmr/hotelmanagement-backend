@@ -4,6 +4,7 @@ import com.x.hotelmanagement.entity.Booking;
 import com.x.hotelmanagement.entity.Room;
 import com.x.hotelmanagement.repository.BookingRepository;
 import com.x.hotelmanagement.repository.RoomRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,10 +23,15 @@ public class BookingService {
      * @param booking Yeni rezervasyon nesnesi
      * @return Booking oluşturulan rezervasyon
      */
+    @Transactional
     public Booking createBooking(Booking booking) {
-        // Odanın veritabanında olup olmadığını kontrol et
+        if (booking.getRoom() == null || booking.getRoom().getId() == null) {
+            throw new RuntimeException("Room ID cannot be null");
+        }
+
+        // Odanın var olup olmadığını kontrol et
         Room room = roomRepository.findById(booking.getRoom().getId())
-                .orElseThrow(() -> new RuntimeException("Room not found"));
+                .orElseThrow(() -> new RuntimeException("Room not found with ID: " + booking.getRoom().getId()));
 
         // Oda belirtilen tarihlerde müsait mi kontrol et
         List<Booking> existingBookings = bookingRepository.findByRoomIdAndCheckInDateBeforeAndCheckOutDateAfter(
@@ -38,52 +44,35 @@ public class BookingService {
 
         // Yeni rezervasyonu kaydet
         booking.setRoom(room);
-        booking.setConfirmed(false); // Başlangıçta rezervasyon onay bekliyor
+        booking.setConfirmed(false);
         return bookingRepository.save(booking);
     }
-
-    /**
-     * Tüm rezervasyonları listeleyen metod.
-     * @return List<Booking> rezervasyon listesi
-     */
+    //**************************************************************************************************************
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
     }
-
-    /**
-     * Belirtilen ID'ye sahip rezervasyonu getirir.
-     * @param id Rezervasyon ID
-     * @return Booking rezervasyon bilgisi
-     */
+    //**************************************************************************************************************
     public Booking getBookingById(Long id) {
         return bookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
+                .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + id));
     }
-
-
-
-    /**
-     * Belirtilen ID'ye sahip bir rezervasyonu günceller.
-     * @param id Güncellenecek rezervasyonun ID'si
-     * @param updatedBooking Güncellenmiş rezervasyon bilgileri
-     * @return Booking güncellenmiş rezervasyon nesnesi
-     */
+    //**************************************************************************************************************
+    @Transactional
     public Booking updateBooking(Long id, Booking updatedBooking) {
-        // Güncellenecek rezervasyonu bul
         Booking existingBooking = bookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
+                .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + id));
 
-        // Oda belirtilen yeni tarihlerde müsait mi kontrol et
+        Room room = roomRepository.findById(existingBooking.getRoom().getId())
+                .orElseThrow(() -> new RuntimeException("Room not found for this booking"));
+
         List<Booking> overlappingBookings = bookingRepository.findByRoomIdAndCheckInDateBeforeAndCheckOutDateAfter(
-                existingBooking.getRoom().getId(), updatedBooking.getCheckOutDate(), updatedBooking.getCheckInDate()
+                room.getId(), updatedBooking.getCheckOutDate(), updatedBooking.getCheckInDate()
         );
 
-        // Eğer oda başka bir rezervasyonla çakışıyorsa hata fırlat
         if (!overlappingBookings.isEmpty() && overlappingBookings.stream().anyMatch(b -> !b.getId().equals(id))) {
             throw new RuntimeException("Room is not available for the selected dates");
         }
 
-        // Güncellenmiş bilgileri set et
         existingBooking.setCustomerName(updatedBooking.getCustomerName());
         existingBooking.setCustomerEmail(updatedBooking.getCustomerEmail());
         existingBooking.setCheckInDate(updatedBooking.getCheckInDate());
@@ -92,19 +81,18 @@ public class BookingService {
 
         return bookingRepository.save(existingBooking);
     }
-
-
-
-    /**
-     * Belirtilen ID'ye sahip bir rezervasyonu siler.
-     * @param id Silinecek rezervasyonun ID'si
-     * @return String Rezervasyonun başarıyla silindiğine dair mesaj
-     */
+    //**************************************************************************************************************
+    @Transactional
     public String deleteBooking(Long id) {
         Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
+                .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + id));
+
+        roomRepository.findById(booking.getRoom().getId())
+                .orElseThrow(() -> new RuntimeException("Room not found for this booking"));
 
         bookingRepository.delete(booking);
         return "Booking with ID " + id + " has been successfully deleted.";
     }
+
+    //**************************************************************************************************************
 }
