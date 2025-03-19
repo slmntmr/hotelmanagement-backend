@@ -36,10 +36,10 @@
 		</dependency>
 
 		<!-- Spring Boot Security: Güvenlik işlemleri için (şimdilik opsiyonel) -->
-		<dependency>
+		<!--<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
+		</dependency>-->
 
 		<!-- Spring Boot Validation: DTO doğrulamaları için -->
 		<dependency>
@@ -77,11 +77,11 @@
 		</dependency>
 
 		<!-- Spring Security Test: Authentication testleri için -->
-		<dependency>
+	<!--	<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
-		</dependency>
+		</dependency>-->
 
 	</dependencies>
 

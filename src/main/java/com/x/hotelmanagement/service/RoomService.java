@@ -22,7 +22,7 @@ public class RoomService {
     public List<Room> getAllRooms() {
         return roomRepository.findAll(); // Veritabanındaki tüm odaları getir.
     }
-
+//***************************************************************************************
     /**
      * Belirtilen ID'ye sahip bir odayı getiren metod.
      * @param id Oda ID'si
@@ -32,7 +32,7 @@ public class RoomService {
         Optional<Room> room = roomRepository.findById(id); // ID'ye göre odayı ara.
         return room.orElseThrow(() -> new RuntimeException("Oda bulunamadı!")); // Oda yoksa hata fırlat.
     }
-
+//***************************************************************************************
     /**
      * Yeni bir oda ekleyen metod.
      * @param room Kaydedilecek oda nesnesi
@@ -41,7 +41,7 @@ public class RoomService {
     public Room createRoom(Room room) {
         return roomRepository.save(room); // Yeni odayı kaydet.
     }
-
+//***************************************************************************************
     /**
      * Mevcut bir odayı güncelleyen metod.
      * @param id Güncellenecek oda ID'si
@@ -60,13 +60,18 @@ public class RoomService {
 
         return roomRepository.save(existingRoom); // Güncellenmiş odayı kaydet.
     }
-
+//***************************************************************************************
     /**
      * Bir odayı silen metod.
      * @param id Silinecek oda ID'si
+     * @return String Silme işleminin başarılı olduğunu belirten mesaj
      */
-    public void deleteRoom(Long id) {
+    public String deleteRoom(Long id) {
         Room room = getRoomById(id); // Silinecek odayı bul.
         roomRepository.delete(room); // Odayı veritabanından sil.
+        return "Room with ID " + id + " has been successfully deleted."; // Silme mesajı döndür.
     }
+
+
+    //***************************************************************************************
 }
